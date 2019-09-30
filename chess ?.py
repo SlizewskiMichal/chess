@@ -6,92 +6,77 @@ import sys
 class pion:
     def __init__(self, pozycja, colour, figure):
         self.alive = True
-        self.position = pozycja
         self.active = False
-        self.colour = colour
         self.moved = False
+        self.colour = colour
+        self.position = pozycja
         self.figure = figure
         self.coordinates = ((ord(self.position[0]) - 65) * 100, 800 - (int(self.position[1])) * 100)
 
-    def changecoordinates(self,x,y):
-        self.coordinates=(x,y)
-        position=chr(x//100+65)+str(8-y//100)
-        self.position=position
+    def changecoordinates(self, x, y):
+        self.coordinates = (x, y)
+        position = chr(x // 100 + 65) + str(8 - y // 100)
+        self.position = position
         self.moved = True
 
-    def killpawn(self):
-        self.position=None
-        self.coordinates=None
-        self.active=False
-        self.alive=False
+    def isinavailablemoves(self, x, y, samecolourpieces, differentcolourpieces):
+        position = chr(x // 100 + 65) + str(8 - y // 100)
 
-    def availablemovesfunc(self , WPIECES, BPIECES):
-        if self.figure == "KNIGHT":
-            availablemoves=self.availablemovesKNIGTHT()
-        elif self.figure == "PAWN":
-            availablemoves=self.availablemovesPAWN(WPIECES,BPIECES)
-        elif self.figure == "BISHOP":
-            availablemoves=self.availablemovesBISHOP(WPIECES,BPIECES)
-        elif self.figure == "ROOK":
-            availablemoves=self.availablemovesROOK(WPIECES,BPIECES)
-        elif self.figure == "QUEEN":
-            availablemoves=self.availablemovesQUEEN(WPIECES,BPIECES)
-        elif self.figure == "KING":
-            availablemoves=self.availablemovesKING(WPIECES,BPIECES)
-        return availablemoves
+        samepiecespositions = []
+        differentpiecespositions = []
 
+        for piece in samecolourpieces:
+            samepiecespositions.append(piece.position)
 
-    def isinavailablemoves(self, x, y, WPIECES, BPIECES):
-        position=chr(x//100+65)+str(8-y//100)
-        if self.colour == "WHITE":
-            self.availablemoves = self.availablemovesfunc(WPIECES, BPIECES)
-        else:
-            self.availablemoves = self.availablemovesfunc(BPIECES, WPIECES)
-        if position in self.availablemoves:
-            if (self.colour == "WHITE" and position not in WPIECES) or (self.colour == "BLACK" and position not in BPIECES):
-                return True
+        for piece in differentcolourpieces:
+            differentpiecespositions.append(piece.position)
+
+        self.availablemoves = self.availablemovesfunc(samepiecespositions, differentpiecespositions)
+
+        if position in self.availablemoves and position not in samepiecespositions:
+            return True
+
         return False
 
+    def killpawn(self):
+        self.position = None
+        self.coordinates = None
+        self.active = False
+        self.alive = False
 
-    def availablemovesKNIGTHT(self):
-        avalablepositions = []
-        avalablepositions.append(chr(ord(self.position[0]) + 2) + str(int(self.position[1]) + 1))
-        avalablepositions.append(chr(ord(self.position[0]) + 2) + str(int(self.position[1]) - 1))
-        avalablepositions.append(chr(ord(self.position[0]) - 2) + str(int(self.position[1]) + 1))
-        avalablepositions.append(chr(ord(self.position[0]) - 2) + str(int(self.position[1]) - 1))
-        avalablepositions.append(chr(ord(self.position[0]) + 1) + str(int(self.position[1]) + 2))
-        avalablepositions.append(chr(ord(self.position[0]) + 1) + str(int(self.position[1]) - 2))
-        avalablepositions.append(chr(ord(self.position[0]) - 1) + str(int(self.position[1]) + 2))
-        avalablepositions.append(chr(ord(self.position[0]) - 1) + str(int(self.position[1]) - 2))
-        print(avalablepositions)
-        return avalablepositions
-
-    def availablemovesPAWN(self, SAMECOLOURPIECES, DIFFERENTCOLOURPIECES):
-        availablemoves = []
-        if self.colour == "WHITE":
-            if self.position[0] + str(int(self.position[1]) + 1) not in DIFFERENTCOLOURPIECES:
-                availablemoves.append(self.position[0] + str(int(self.position[1]) + 1))
-                if self.position[0] + str(int(self.position[1]) + 2) not in DIFFERENTCOLOURPIECES and self.position[0] + str(int(self.position[1]) + 1) not in SAMECOLOURPIECES and not self.moved:
-                    availablemoves.append(self.position[0] + str(int(self.position[1]) + 2))
-            if chr(ord(self.position[0]) + 1) + str(int(self.position[1]) + 1) in DIFFERENTCOLOURPIECES:
-                availablemoves.append(chr(ord(self.position[0]) + 1) + str(int(self.position[1]) + 1))
-            if chr(ord(self.position[0]) - 1) + str(int(self.position[1]) + 1) in DIFFERENTCOLOURPIECES:
-                availablemoves.append(chr(ord(self.position[0]) - 1) + str(int(self.position[1]) + 1))
-        else:
-            if self.position[0] + str(int(self.position[1]) - 1) not in DIFFERENTCOLOURPIECES:
-                availablemoves.append(self.position[0] + str(int(self.position[1]) - 1))
-                if self.position[0] + str(int(self.position[1]) - 2) not in DIFFERENTCOLOURPIECES and self.position[0] + str(int(self.position[1]) - 1) not in SAMECOLOURPIECES and not self.moved:
-                    availablemoves.append(self.position[0] + str(int(self.position[1]) - 2))
-            if chr(ord(self.position[0]) + 1) + str(int(self.position[1]) - 1) in DIFFERENTCOLOURPIECES:
-                availablemoves.append(chr(ord(self.position[0]) + 1) + str(int(self.position[1]) - 1))
-            if chr(ord(self.position[0]) - 1) + str(int(self.position[1]) - 1) in DIFFERENTCOLOURPIECES:
-                availablemoves.append(chr(ord(self.position[0]) - 1) + str(int(self.position[1]) - 1))
+    def availablemovesfunc(self, samecolourpieces, differentcolourpieces):
+        if self.figure == "KNIGHT":
+            availablemoves = self.availablemovesKNIGTHT()
+        elif self.figure == "PAWN":
+            availablemoves = self.availablemovesPAWN(samecolourpieces, differentcolourpieces)
+        elif self.figure == "BISHOP":
+            availablemoves = self.availablemovesBISHOP(samecolourpieces, differentcolourpieces)
+        elif self.figure == "ROOK":
+            availablemoves = self.availablemovesROOK(samecolourpieces, differentcolourpieces)
+        elif self.figure == "QUEEN":
+            availablemoves = self.availablemovesQUEEN(samecolourpieces, differentcolourpieces)
+        elif self.figure == "KING":
+            availablemoves = self.availablemovesKING()
         return availablemoves
 
-    def availablemovesBISHOP(self, SAMECOLOURPIECES, DIFFERENTCOLOURPIECES):
+
+    def availablemovesKING(self):
+        availablemoves = []
+        availablemoves.append(self.createpos(1, 1))
+        availablemoves.append(self.createpos(1, 0))
+        availablemoves.append(self.createpos(1, -1))
+        availablemoves.append(self.createpos(0, 1))
+        availablemoves.append(self.createpos(0, -1))
+        availablemoves.append(self.createpos(-1, 1))
+        availablemoves.append(self.createpos(-1, 0))
+        availablemoves.append(self.createpos(-1, -1))
+        return availablemoves
+
+
+    def availablemovesQUEEN(self, SAMECOLOURPIECES, DIFFERENTCOLOURPIECES):
         availablemoves = []
         position = self.position
-        iterators = [1,-1]
+        iterators = [1, -1]
         for iterator in iterators:
             while ord(position[0]) >= 65 and ord(position[0]) <= 72 and int(position[1]) >= 1 and int(position[1]) <= 8:
                 if position in SAMECOLOURPIECES and position != self.position:
@@ -102,7 +87,7 @@ class pion:
                     break
                 else:
                     availablemoves.append(position)
-                position = chr(ord(position[0]) + iterator) + str(int(position[1]) + iterator)
+                position = self.createpos(iterator, iterator)
             position = self.position
         for iterator in iterators:
             while ord(position[0]) >= 65 and ord(position[0]) <= 72 and int(position[1]) >= 1 and int(position[1]) <= 8:
@@ -113,7 +98,29 @@ class pion:
                     break
                 else:
                     availablemoves.append(position)
-                position = chr(ord(position[0]) + iterator) + str(int(position[1]) - iterator)
+                position = self.createpos(iterator, -iterator)
+            position = self.position
+        for iterator in iterators:
+            while int(position[1]) >= 1 and int(position[1]) <= 8:
+                if position in SAMECOLOURPIECES and position != self.position:
+                    break
+                elif position in DIFFERENTCOLOURPIECES:
+                    availablemoves.append(position)
+                    break
+                else:
+                    availablemoves.append(position)
+                position = self.createpos(0, iterator)
+            position = self.position
+        for iterator in iterators:
+            while ord(position[0]) >= 65 and ord(position[0]) <= 72:
+                if position in SAMECOLOURPIECES and position != self.position:
+                    break
+                elif position in DIFFERENTCOLOURPIECES:
+                    availablemoves.append(position)
+                    break
+                else:
+                    availablemoves.append(position)
+                position = self.createpos(iterator, 0)
             position = self.position
         print(availablemoves)
         return availablemoves
@@ -132,10 +139,10 @@ class pion:
                     break
                 else:
                     availablemoves.append(position)
-                position = position[0] + str(int(position[1]) + iterator)
+                position = self.createpos(0, iterator)
             position = self.position
         for iterator in iterators:
-            while ord(position[0]) >= 65 and ord(position[0]) <= 72 :
+            while ord(position[0]) >= 65 and ord(position[0]) <= 72:
                 if position in SAMECOLOURPIECES and position != self.position:
                     break
                 elif position in DIFFERENTCOLOURPIECES:
@@ -143,12 +150,25 @@ class pion:
                     break
                 else:
                     availablemoves.append(position)
-                position = chr(ord(position[0]) + iterator) + position[1]
+                position = self.createpos(iterator, 0)
             position = self.position
         print(availablemoves)
         return availablemoves
 
-    def availablemovesQUEEN(self, SAMECOLOURPIECES, DIFFERENTCOLOURPIECES):
+
+    def availablemovesKNIGTHT(self):
+        avalablepositions = []
+        avalablepositions.append(self.createpos( 2,  1))
+        avalablepositions.append(self.createpos( 2, -1))
+        avalablepositions.append(self.createpos(-2,  1))
+        avalablepositions.append(self.createpos(-2, -1))
+        avalablepositions.append(self.createpos( 1,  2))
+        avalablepositions.append(self.createpos( 1, -2))
+        avalablepositions.append(self.createpos(-1,  2))
+        avalablepositions.append(self.createpos(-1, -2))
+        return avalablepositions
+
+    def availablemovesBISHOP(self, SAMECOLOURPIECES, DIFFERENTCOLOURPIECES):
         availablemoves = []
         position = self.position
         iterators = [1, -1]
@@ -162,7 +182,7 @@ class pion:
                     break
                 else:
                     availablemoves.append(position)
-                position = chr(ord(position[0]) + iterator) + str(int(position[1]) + iterator)
+                position = self.createpos(iterator, iterator)
             position = self.position
         for iterator in iterators:
             while ord(position[0]) >= 65 and ord(position[0]) <= 72 and int(position[1]) >= 1 and int(position[1]) <= 8:
@@ -173,45 +193,30 @@ class pion:
                     break
                 else:
                     availablemoves.append(position)
-                position = chr(ord(position[0]) + iterator) + str(int(position[1]) - iterator)
-            position = self.position
-        for iterator in iterators:
-            while int(position[1]) >= 1 and int(position[1]) <= 8:
-                if position in SAMECOLOURPIECES and position != self.position:
-                    break
-                elif position in DIFFERENTCOLOURPIECES:
-                    availablemoves.append(position)
-                    break
-                else:
-                    availablemoves.append(position)
-                position = position[0] + str(int(position[1]) + iterator)
-            position = self.position
-        for iterator in iterators:
-            while ord(position[0]) >= 65 and ord(position[0]) <= 72:
-                if position in SAMECOLOURPIECES and position != self.position:
-                    break
-                elif position in DIFFERENTCOLOURPIECES:
-                    availablemoves.append(position)
-                    break
-                else:
-                    availablemoves.append(position)
-                position = chr(ord(position[0]) + iterator) + position[1]
+                position = self.createpos(iterator, -iterator)
             position = self.position
         print(availablemoves)
         return availablemoves
+        print(avalablepositions)
 
-    def availablemovesKING(self, WPIECES, BPIECES):
-        availablemoves=[]
-        availablemoves.append(chr(ord(self.position[0]) + 1) + str(int(self.position[1]) + 1))
-        availablemoves.append(chr(ord(self.position[0]) + 1) + self.position[1])
-        availablemoves.append(chr(ord(self.position[0]) + 1) + str(int(self.position[1]) - 1))
-        availablemoves.append(self.position[0] + str(int(self.position[1]) + 1))
-        availablemoves.append(self.position[0] + str(int(self.position[1]) - 1))
-        availablemoves.append(chr(ord(self.position[0]) - 1) + str(int(self.position[1]) + 1))
-        availablemoves.append(chr(ord(self.position[0]) - 1) + self.position[1])
-        availablemoves.append(chr(ord(self.position[0]) - 1) + str(int(self.position[1]) - 1))
+    def availablemovesPAWN(self, SAMECOLOURPIECES, DIFFERENTCOLOURPIECES):
+        availablemoves = []
+        i=1
+        if self.colour == "BLACK":
+            i=-1
+        if self.createpos(0, i*1) not in DIFFERENTCOLOURPIECES:
+            availablemoves.append(self.createpos(0, i*1))
+            if self.createpos(0, i*2) not in DIFFERENTCOLOURPIECES and self.createpos(0, i*1) not in SAMECOLOURPIECES and not self.moved:
+                availablemoves.append(self.createpos(0, i*2))
+        if self.createpos(1, i*1) in DIFFERENTCOLOURPIECES:
+            availablemoves.append(self.createpos(1, i*1))
+        if self.createpos(-1, i*1) in DIFFERENTCOLOURPIECES:
+            availablemoves.append(self.createpos(-1, i*1))
+        print(availablemoves)
         return availablemoves
 
+    def createpos(self,howmanyletter,howmanynumbers):
+        return chr(ord(self.position[0]) + howmanyletter) + str(int(self.position[1]) + howmanynumbers)
 
 
 class gracz:
@@ -272,6 +277,9 @@ class gracz:
         self.KING = self.pieces[15]
 
 
+
+
+
 class board(QWidget):
 
     def __init__(self):
@@ -330,89 +338,75 @@ class board(QWidget):
             return True
         return False
 
-    def killpawn(self, playerindex, pieceindex):
+    def eresepawnimage(self, playerindex, pieceindex):
         self.piecelabels[playerindex * 16 + pieceindex].deleteLater()
 
+    def findactivepiece(self):
+        playerindex = 0
+        for player in self.Players:
+            pieceindex = 0
+            if player.PieceChoosed:
+                for piece in player.pieces:
+                    if piece.active:
+                        return playerindex, pieceindex
+                    pieceindex = pieceindex + 1
+            playerindex = playerindex + 1
+        return -100, -100
+
+    def releasefigure(self, playerindex, pieceindex, x, y):
+        if self.Players[playerindex].pieces[pieceindex].coordinates == (x - x % 100, y - y % 100):
+            print("CHANGE")
+            self.Players[playerindex].pieces[pieceindex].active = False
+            self.Players[playerindex].PieceChoosed = False
+
+    def shouldikill(self, playerindex, pieceindex):
+        indexofpiece = 0
+        for PIECE in self.Players[abs(playerindex - 1)].pieces:
+            if PIECE.position == self.Players[playerindex].pieces[pieceindex].position:
+                self.eresepawnimage(abs(playerindex - 1), indexofpiece)
+                self.Players[abs(playerindex - 1)].pieces[indexofpiece].killpawn()
+                break
+            indexofpiece = indexofpiece + 1
+
+    def changepiecepos(self, x, y):
+        playerindex, pieceindex = self.findactivepiece()
+
+        self.releasefigure(playerindex, pieceindex, x, y)
+
+        if self.Players[playerindex].pieces[pieceindex].isinavailablemoves(x - (x % 100), y - (y % 100),
+                                                                           self.Players[playerindex].pieces,
+                                                                           self.Players[abs(playerindex - 1)].pieces):
+            self.Players[playerindex].pieces[pieceindex].changecoordinates(x - (x % 100), y - (y % 100))
+
+            self.shouldikill(playerindex, pieceindex)
+
+            self.Players[playerindex].update_pos()
+
+            self.Players[playerindex].PieceChoosed = False
+
+            self.updatelabels()
 
     def mouseReleaseEvent(self, QmouseEvent):
         x, y = QmouseEvent.x(), QmouseEvent.y()
-        playerindex = 0
         if self.Players[0].PieceChoosed or self.Players[1].PieceChoosed:
-            for player in self.Players:
-                pieceindex = 0
-                if player.PieceChoosed:
-                    for piece in player.pieces:
-                        if piece.active:
-                            if piece.coordinates == (x-x%100,y-y%100):
-                                print("CHANGE")
-                                self.Players[playerindex].pieces[pieceindex].active=False
-                                self.Players[playerindex].PieceChoosed = False
-                                break
-                            WPIECES = []
-                            BPIECES = []
-                            for WPIECE in self.Players[0].pieces:
-                                WPIECES.append(WPIECE.position)
-                            for BPIECE in self.Players[1].pieces:
-                                BPIECES.append(BPIECE.position)
-                            if piece.isinavailablemoves(x - (x % 100), y - (y % 100), WPIECES, BPIECES):
-                                self.Players[playerindex].pieces[pieceindex].changecoordinates(x - (x % 100), y - (y % 100))
-                                indexofpiece=0
-                                for PIECE in self.Players[abs(playerindex-1)].pieces :
-                                    if PIECE.position == self.Players[playerindex].pieces[pieceindex].position:
-                                        self.killpawn(abs(playerindex-1),indexofpiece)
-                                        self.Players[abs(playerindex-1)].pieces[indexofpiece].killpawn()
-                                        break
-                                    indexofpiece = indexofpiece + 1
-
-                                self.Players[playerindex].update_pos()
-                                self.Players[playerindex].PieceChoosed = False
-                                self.updatelabels()
-                        pieceindex = pieceindex + 1
-                playerindex = playerindex + 1
+            self.changepiecepos(x, y)
         else:
-            for player in self.Players:
-                player.PieceChoosed = False
-                for pawn in player.pawns:
-                    if pawn.alive and self.mouse_in(x, y, pawn.coordinates):
-                        print(player.ktory + "Pawn")
-                        pawn.active = True
-                        player.PieceChoosed = True
-                if  player.ROOK1.alive and self.mouse_in(x, y, player.ROOK1.coordinates) and not player.PieceChoosed:
-                    print(player.ktory + "ROOK")
-                    player.ROOK1.active = True
-                    player.PieceChoosed = True
-                elif player.ROOK2.alive and self.mouse_in(x, y, player.ROOK2.coordinates) and not player.PieceChoosed:
-                    print(player.ktory + "ROOK")
-                    player.ROOK2.active = True
-                    player.PieceChoosed = True
-                elif player.KNIGHT1.alive and self.mouse_in(x, y, player.KNIGHT1.coordinates) and not player.PieceChoosed:
-                    print(player.ktory + "KNIGHT")
-                    player.KNIGHT1.active = True
-                    player.PieceChoosed = True
-                elif player.KNIGHT2.alive and self.mouse_in(x, y, player.KNIGHT2.coordinates) and not player.PieceChoosed:
-                    print(player.ktory + "KNIGHT")
-                    player.KNIGHT2.active = True
-                    player.PieceChoosed = True
-                elif player.BISHOP1.alive and self.mouse_in(x, y, player.BISHOP1.coordinates) and not player.PieceChoosed:
-                    print(player.ktory + "BISHOP")
-                    player.BISHOP1.active = True
-                    player.PieceChoosed = True
-                elif player.BISHOP2.alive and self.mouse_in(x, y, player.BISHOP2.coordinates) and not player.PieceChoosed:
-                    print(player.ktory + "BISHOP")
-                    player.BISHOP2.active = True
-                    player.PieceChoosed = True
-                elif player.KING.alive and self.mouse_in(x, y, player.KING.coordinates) and not player.PieceChoosed:
-                    print(player.ktory + "KING")
-                    player.KING.active = True
-                    player.PieceChoosed = True
-                elif player.QUEEN.alive and self.mouse_in(x, y, player.QUEEN.coordinates) and not player.PieceChoosed:
-                    print(player.ktory + "QUEEN")
-                    player.QUEEN.active = True
-                    player.PieceChoosed = True
+            self.chosefigure(x, y)
 
     def drawRect(self, qp, r, g, b, x, y, width, height):
         qp.setBrush(QColor(r, g, b))
         qp.drawRect(x, y, width, height)
+
+    def chosefigure(self, x, y):
+        for playerindex in range(0, len(self.Players)):
+            for pieceindex in range(0, len(self.Players[playerindex].pieces)):
+                if not (not self.Players[playerindex].pieces[pieceindex].alive or not self.mouse_in(x, y, self.Players[
+                    playerindex].pieces[pieceindex].coordinates)) and not self.Players[playerindex].PieceChoosed:
+                    print(self.Players[playerindex].ktory + self.Players[playerindex].pieces[pieceindex].figure)
+                    self.Players[playerindex].pieces[pieceindex].active = True
+                    self.Players[playerindex].PieceChoosed = True
+                    break
+
 
     def calculate_x_y(self, position):
         x = (ord(position[0]) - 65) * 100
