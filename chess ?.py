@@ -34,8 +34,9 @@ class pion:
         self.availablemoves = self.availablemovesfunc(samepiecespositions, differentpiecespositions)
 
         if position in self.availablemoves and position not in samepiecespositions:
+            print('T')
             return True
-
+        print('N')
         return False
 
     def killpawn(self):
@@ -59,7 +60,6 @@ class pion:
             availablemoves = self.availablemovesKING()
         return availablemoves
 
-
     def availablemovesKING(self):
         availablemoves = []
         availablemoves.append(self.createpos(1, 1))
@@ -72,65 +72,67 @@ class pion:
         availablemoves.append(self.createpos(-1, -1))
         return availablemoves
 
-
     def availablemovesQUEEN(self, SAMECOLOURPIECES, DIFFERENTCOLOURPIECES):
         availablemoves = []
-        position = self.position
-        iterators = [1, -1]
-        for iterator in iterators:
-            while ord(position[0]) >= 65 and ord(position[0]) <= 72 and int(position[1]) >= 1 and int(position[1]) <= 8:
-                if position in SAMECOLOURPIECES and position != self.position:
-                    print(position)
-                    break
-                elif position in DIFFERENTCOLOURPIECES:
-                    availablemoves.append(position)
-                    break
-                else:
-                    availablemoves.append(position)
-                position = self.createpos(iterator, iterator)
-            position = self.position
-        for iterator in iterators:
-            while ord(position[0]) >= 65 and ord(position[0]) <= 72 and int(position[1]) >= 1 and int(position[1]) <= 8:
-                if position in SAMECOLOURPIECES and position != self.position:
-                    break
-                elif position in DIFFERENTCOLOURPIECES:
-                    availablemoves.append(position)
-                    break
-                else:
-                    availablemoves.append(position)
-                position = self.createpos(iterator, -iterator)
-            position = self.position
-        for iterator in iterators:
-            while int(position[1]) >= 1 and int(position[1]) <= 8:
-                if position in SAMECOLOURPIECES and position != self.position:
-                    break
-                elif position in DIFFERENTCOLOURPIECES:
-                    availablemoves.append(position)
-                    break
-                else:
-                    availablemoves.append(position)
-                position = self.createpos(0, iterator)
-            position = self.position
-        for iterator in iterators:
-            while ord(position[0]) >= 65 and ord(position[0]) <= 72:
-                if position in SAMECOLOURPIECES and position != self.position:
-                    break
-                elif position in DIFFERENTCOLOURPIECES:
-                    availablemoves.append(position)
-                    break
-                else:
-                    availablemoves.append(position)
-                position = self.createpos(iterator, 0)
-            position = self.position
-        print(availablemoves)
+        for i in (self.availablemovesROOK(SAMECOLOURPIECES , DIFFERENTCOLOURPIECES),self.availablemovesBISHOP(SAMECOLOURPIECES , DIFFERENTCOLOURPIECES)):
+            for pos in i:
+                availablemoves.append(pos)
+        # position = self.position
+        # iterators = [1, -1]
+        # for iterator in iterators:
+        #     while ord(position[0]) >= 65 and ord(position[0]) <= 72 and int(position[1]) >= 1 and int(position[1]) <= 8:
+        #         if position in SAMECOLOURPIECES and position != self.position:
+        #             print(position)
+        #             break
+        #         elif position in DIFFERENTCOLOURPIECES:
+        #             availablemoves.append(position)
+        #             break
+        #         else:
+        #             availablemoves.append(position)
+        #         position = self.createpos(iterator, iterator)
+        #     position = self.position
+        # for iterator in iterators:
+        #     while ord(position[0]) >= 65 and ord(position[0]) <= 72 and int(position[1]) >= 1 and int(position[1]) <= 8:
+        #         if position in SAMECOLOURPIECES and position != self.position:
+        #             break
+        #         elif position in DIFFERENTCOLOURPIECES:
+        #             availablemoves.append(position)
+        #             break
+        #         else:
+        #             availablemoves.append(position)
+        #         position = self.createpos(iterator, -iterator)
+        #     position = self.position
+        # for iterator in iterators:
+        #     while int(position[1]) >= 1 and int(position[1]) <= 8:
+        #         if position in SAMECOLOURPIECES and position != self.position:
+        #             break
+        #         elif position in DIFFERENTCOLOURPIECES:
+        #             availablemoves.append(position)
+        #             break
+        #         else:
+        #             availablemoves.append(position)
+        #         position = self.createpos(0, iterator)
+        #     position = self.position
+        # for iterator in iterators:
+        #     while ord(position[0]) >= 65 and ord(position[0]) <= 72:
+        #         if position in SAMECOLOURPIECES and position != self.position:
+        #             break
+        #         elif position in DIFFERENTCOLOURPIECES:
+        #             availablemoves.append(position)
+        #             break
+        #         else:
+        #             availablemoves.append(position)
+        #         position = self.createpos(iterator, 0)
+        #     position = self.position
+        # print(availablemoves)
         return availablemoves
-
 
     def availablemovesROOK(self, SAMECOLOURPIECES, DIFFERENTCOLOURPIECES):
         availablemoves = []
         position = self.position
         iterators = [1, -1]
         for iterator in iterators:
+            iteratorvariable = 0
             while int(position[1]) >= 1 and int(position[1]) <= 8:
                 if position in SAMECOLOURPIECES and position != self.position:
                     break
@@ -139,9 +141,12 @@ class pion:
                     break
                 else:
                     availablemoves.append(position)
-                position = self.createpos(0, iterator)
+                iteratorvariable = iteratorvariable + iterator
+                position = self.createpos(0, iteratorvariable)
+                print(position)
             position = self.position
         for iterator in iterators:
+            iteratorvariable = 0
             while ord(position[0]) >= 65 and ord(position[0]) <= 72:
                 if position in SAMECOLOURPIECES and position != self.position:
                     break
@@ -150,21 +155,21 @@ class pion:
                     break
                 else:
                     availablemoves.append(position)
-                position = self.createpos(iterator, 0)
+                iteratorvariable = iteratorvariable + iterator
+                position = self.createpos(iteratorvariable , 0)
             position = self.position
         print(availablemoves)
         return availablemoves
 
-
     def availablemovesKNIGTHT(self):
         avalablepositions = []
-        avalablepositions.append(self.createpos( 2,  1))
-        avalablepositions.append(self.createpos( 2, -1))
-        avalablepositions.append(self.createpos(-2,  1))
+        avalablepositions.append(self.createpos(2, 1))
+        avalablepositions.append(self.createpos(2, -1))
+        avalablepositions.append(self.createpos(-2, 1))
         avalablepositions.append(self.createpos(-2, -1))
-        avalablepositions.append(self.createpos( 1,  2))
-        avalablepositions.append(self.createpos( 1, -2))
-        avalablepositions.append(self.createpos(-1,  2))
+        avalablepositions.append(self.createpos(1, 2))
+        avalablepositions.append(self.createpos(1, -2))
+        avalablepositions.append(self.createpos(-1, 2))
         avalablepositions.append(self.createpos(-1, -2))
         return avalablepositions
 
@@ -173,6 +178,7 @@ class pion:
         position = self.position
         iterators = [1, -1]
         for iterator in iterators:
+            iteratorvariable = 0
             while ord(position[0]) >= 65 and ord(position[0]) <= 72 and int(position[1]) >= 1 and int(position[1]) <= 8:
                 if position in SAMECOLOURPIECES and position != self.position:
                     print(position)
@@ -182,9 +188,11 @@ class pion:
                     break
                 else:
                     availablemoves.append(position)
-                position = self.createpos(iterator, iterator)
+                iteratorvariable += iterator
+                position = self.createpos(iteratorvariable, iteratorvariable)
             position = self.position
         for iterator in iterators:
+            iteratorvariable = 0
             while ord(position[0]) >= 65 and ord(position[0]) <= 72 and int(position[1]) >= 1 and int(position[1]) <= 8:
                 if position in SAMECOLOURPIECES and position != self.position:
                     break
@@ -193,7 +201,8 @@ class pion:
                     break
                 else:
                     availablemoves.append(position)
-                position = self.createpos(iterator, -iterator)
+                iteratorvariable += iterator
+                position = self.createpos(iteratorvariable, -iteratorvariable)
             position = self.position
         print(availablemoves)
         return availablemoves
@@ -201,21 +210,22 @@ class pion:
 
     def availablemovesPAWN(self, SAMECOLOURPIECES, DIFFERENTCOLOURPIECES):
         availablemoves = []
-        i=1
+        i = 1
         if self.colour == "BLACK":
-            i=-1
-        if self.createpos(0, i*1) not in DIFFERENTCOLOURPIECES:
-            availablemoves.append(self.createpos(0, i*1))
-            if self.createpos(0, i*2) not in DIFFERENTCOLOURPIECES and self.createpos(0, i*1) not in SAMECOLOURPIECES and not self.moved:
-                availablemoves.append(self.createpos(0, i*2))
-        if self.createpos(1, i*1) in DIFFERENTCOLOURPIECES:
-            availablemoves.append(self.createpos(1, i*1))
-        if self.createpos(-1, i*1) in DIFFERENTCOLOURPIECES:
-            availablemoves.append(self.createpos(-1, i*1))
+            i = -1
+        if self.createpos(0, i * 1) not in DIFFERENTCOLOURPIECES:
+            availablemoves.append(self.createpos(0, i * 1))
+            if self.createpos(0, i * 2) not in DIFFERENTCOLOURPIECES and self.createpos(0,
+                                                                                        i * 1) not in SAMECOLOURPIECES and not self.moved:
+                availablemoves.append(self.createpos(0, i * 2))
+        if self.createpos(1, i * 1) in DIFFERENTCOLOURPIECES:
+            availablemoves.append(self.createpos(1, i * 1))
+        if self.createpos(-1, i * 1) in DIFFERENTCOLOURPIECES:
+            availablemoves.append(self.createpos(-1, i * 1))
         print(availablemoves)
         return availablemoves
 
-    def createpos(self,howmanyletter,howmanynumbers):
+    def createpos(self, howmanyletter, howmanynumbers):
         return chr(ord(self.position[0]) + howmanyletter) + str(int(self.position[1]) + howmanynumbers)
 
 
@@ -277,9 +287,6 @@ class gracz:
         self.KING = self.pieces[15]
 
 
-
-
-
 class board(QWidget):
 
     def __init__(self):
@@ -299,7 +306,7 @@ class board(QWidget):
 
         QToolTip.setFont(QFont('SansSerif', 10))
 
-        self.setGeometry(800, 800, 800, 800)
+        self.setGeometry(2800, 2800, 800, 800)
 
         self.setWindowTitle('chess')
 
@@ -406,7 +413,6 @@ class board(QWidget):
                     self.Players[playerindex].pieces[pieceindex].active = True
                     self.Players[playerindex].PieceChoosed = True
                     break
-
 
     def calculate_x_y(self, position):
         x = (ord(position[0]) - 65) * 100
