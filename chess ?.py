@@ -74,57 +74,10 @@ class pion:
 
     def availablemovesQUEEN(self, SAMECOLOURPIECES, DIFFERENTCOLOURPIECES):
         availablemoves = []
-        for i in (self.availablemovesROOK(SAMECOLOURPIECES , DIFFERENTCOLOURPIECES),self.availablemovesBISHOP(SAMECOLOURPIECES , DIFFERENTCOLOURPIECES)):
+        for i in (self.availablemovesROOK(SAMECOLOURPIECES, DIFFERENTCOLOURPIECES),
+                  self.availablemovesBISHOP(SAMECOLOURPIECES, DIFFERENTCOLOURPIECES)):
             for pos in i:
                 availablemoves.append(pos)
-        # position = self.position
-        # iterators = [1, -1]
-        # for iterator in iterators:
-        #     while ord(position[0]) >= 65 and ord(position[0]) <= 72 and int(position[1]) >= 1 and int(position[1]) <= 8:
-        #         if position in SAMECOLOURPIECES and position != self.position:
-        #             print(position)
-        #             break
-        #         elif position in DIFFERENTCOLOURPIECES:
-        #             availablemoves.append(position)
-        #             break
-        #         else:
-        #             availablemoves.append(position)
-        #         position = self.createpos(iterator, iterator)
-        #     position = self.position
-        # for iterator in iterators:
-        #     while ord(position[0]) >= 65 and ord(position[0]) <= 72 and int(position[1]) >= 1 and int(position[1]) <= 8:
-        #         if position in SAMECOLOURPIECES and position != self.position:
-        #             break
-        #         elif position in DIFFERENTCOLOURPIECES:
-        #             availablemoves.append(position)
-        #             break
-        #         else:
-        #             availablemoves.append(position)
-        #         position = self.createpos(iterator, -iterator)
-        #     position = self.position
-        # for iterator in iterators:
-        #     while int(position[1]) >= 1 and int(position[1]) <= 8:
-        #         if position in SAMECOLOURPIECES and position != self.position:
-        #             break
-        #         elif position in DIFFERENTCOLOURPIECES:
-        #             availablemoves.append(position)
-        #             break
-        #         else:
-        #             availablemoves.append(position)
-        #         position = self.createpos(0, iterator)
-        #     position = self.position
-        # for iterator in iterators:
-        #     while ord(position[0]) >= 65 and ord(position[0]) <= 72:
-        #         if position in SAMECOLOURPIECES and position != self.position:
-        #             break
-        #         elif position in DIFFERENTCOLOURPIECES:
-        #             availablemoves.append(position)
-        #             break
-        #         else:
-        #             availablemoves.append(position)
-        #         position = self.createpos(iterator, 0)
-        #     position = self.position
-        # print(availablemoves)
         return availablemoves
 
     def availablemovesROOK(self, SAMECOLOURPIECES, DIFFERENTCOLOURPIECES):
@@ -156,7 +109,7 @@ class pion:
                 else:
                     availablemoves.append(position)
                 iteratorvariable = iteratorvariable + iterator
-                position = self.createpos(iteratorvariable , 0)
+                position = self.createpos(iteratorvariable, 0)
             position = self.position
         print(availablemoves)
         return availablemoves
@@ -302,6 +255,8 @@ class board(QWidget):
 
         self.initUI()
 
+        self.whoPlayNow = "W"
+
     def initUI(self):
 
         QToolTip.setFont(QFont('SansSerif', 10))
@@ -324,6 +279,12 @@ class board(QWidget):
                 self.piecelabels[i].setPixmap(QPixmap(player.ktory[0] + piece.figure + ".png"))
                 self.piecelabels[i].move(piece.coordinates[0], piece.coordinates[1])
                 i = i + 1
+
+    def changeplayer(self):
+        if self.whoPlayNow == "W":
+            self.whoPlayNow = "B"
+        else :
+            self.whoPlayNow = "W"
 
     def updatelabels(self):
         playerindex = 0
@@ -393,6 +354,8 @@ class board(QWidget):
 
             self.updatelabels()
 
+            self.changeplayer()
+
     def mouseReleaseEvent(self, QmouseEvent):
         x, y = QmouseEvent.x(), QmouseEvent.y()
         if self.Players[0].PieceChoosed or self.Players[1].PieceChoosed:
@@ -408,7 +371,7 @@ class board(QWidget):
         for playerindex in range(0, len(self.Players)):
             for pieceindex in range(0, len(self.Players[playerindex].pieces)):
                 if not (not self.Players[playerindex].pieces[pieceindex].alive or not self.mouse_in(x, y, self.Players[
-                    playerindex].pieces[pieceindex].coordinates)) and not self.Players[playerindex].PieceChoosed:
+                    playerindex].pieces[pieceindex].coordinates)) and not self.Players[playerindex].PieceChoosed and self.Players[playerindex].ktory[0] == self.whoPlayNow:
                     print(self.Players[playerindex].ktory + self.Players[playerindex].pieces[pieceindex].figure)
                     self.Players[playerindex].pieces[pieceindex].active = True
                     self.Players[playerindex].PieceChoosed = True
