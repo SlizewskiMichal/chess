@@ -1,6 +1,7 @@
 from PyQt5.QtWidgets import (QWidget, QToolTip, QApplication, QLabel)
 from PyQt5.QtGui import QPainter, QColor, QPixmap, QFont
 import sys
+import copy
 
 
 class pion:
@@ -12,6 +13,9 @@ class pion:
         self.position = pozycja
         self.figure = figure
         self.coordinates = ((ord(self.position[0]) - 65) * 100, 800 - (int(self.position[1])) * 100)
+        self.samecolorpiecesglobal = []
+        self.differentpiecesglobal = []
+        self.checkmode = False
 
     def changecoordinates(self, x, y):
         self.coordinates = (x, y)
@@ -21,6 +25,9 @@ class pion:
 
     def isinavailablemoves(self, x, y, samecolourpieces, differentcolourpieces):
         position = chr(x // 100 + 65) + str(8 - y // 100)
+
+        self.samecolorpiecesglobal = samecolourpieces
+        self.differentpiecesglobal = differentcolourpieces
 
         samepiecespositions = []
         differentpiecespositions = []
@@ -33,7 +40,9 @@ class pion:
 
         self.availablemoves = self.availablemovesfunc(samepiecespositions, differentpiecespositions)
 
-        if position in self.availablemoves and position not in samepiecespositions:
+        print(self.availablemoves)
+
+        if position in self.availablemoves:
             print('T')
             return True
         print('N')
@@ -45,31 +54,83 @@ class pion:
         self.active = False
         self.alive = False
 
-    def availablemovesfunc(self, samecolourpieces, differentcolourpieces):
+    def check(self,samecolourpiecespositions,differentcolourpiecespositions,position):
+        if self.checkmode:
+            return False
+        differentpieceslocal = copy.deepcopy(self.differentpiecesglobal)
+        index = 0
+        for i in range (0,len(samecolourpiecespositions)):
+            if samecolourpiecespositions[i] == self.position:
+                samecolourpiecespositions[i] = position
+                index = i
+                break
+
+        alldifferentpiecesavailablemoves = []
+
+        if samecolourpiecespositions[15] in differentcolourpiecespositions:
+            for index2 in range(0,len(differentpieceslocal)):
+                if samecolourpiecespositions[15] == differentpieceslocal[index2].position:
+                    print(differentpieceslocal[index2].position)
+                    print(position)
+                    differentpieceslocal[index2].position = None
+                    differentpieceslocal[index2].alive = None
+                    differentpieceslocal[index2].active = None
+                    differentpieceslocal[index2].coordinates = None
+                    print(self.differentpiecesglobal[index2].position)
+                    print("ssdde")
+
+                    break
+
+        differentcolourpiecespositionslocal = []
+
+        for piece in differentpieceslocal:
+            differentcolourpiecespositionslocal.append(piece.position)
+
+
+        for piece in differentpieceslocal:
+            piece.checkmode = True
+            availablemoves = piece.availablemovesfunc(differentcolourpiecespositionslocal,samecolourpiecespositions)
+            for move in availablemoves:
+                alldifferentpiecesavailablemoves.append(move)
+            piece.checkmode = False
+        if samecolourpiecespositions[15] in alldifferentpiecesavailablemoves:
+            samecolourpiecespositions[index] = self.position
+            return True
+        samecolourpiecespositions[index] = self.position
+        return False
+
+
+    def availablemovesfunc(self, SAMECOLOURPIECES, DIFFERENTCOLOURPIECES):
+        if not self.alive:
+            return([])
         if self.figure == "KNIGHT":
-            availablemoves = self.availablemovesKNIGTHT()
+            availablemoves = self.availablemovesKNIGTHT(SAMECOLOURPIECES, DIFFERENTCOLOURPIECES)
         elif self.figure == "PAWN":
-            availablemoves = self.availablemovesPAWN(samecolourpieces, differentcolourpieces)
+            availablemoves = self.availablemovesPAWN(SAMECOLOURPIECES, DIFFERENTCOLOURPIECES)
         elif self.figure == "BISHOP":
-            availablemoves = self.availablemovesBISHOP(samecolourpieces, differentcolourpieces)
+            availablemoves = self.availablemovesBISHOP(SAMECOLOURPIECES, DIFFERENTCOLOURPIECES)
         elif self.figure == "ROOK":
-            availablemoves = self.availablemovesROOK(samecolourpieces, differentcolourpieces)
+            availablemoves = self.availablemovesROOK(SAMECOLOURPIECES, DIFFERENTCOLOURPIECES)
         elif self.figure == "QUEEN":
-            availablemoves = self.availablemovesQUEEN(samecolourpieces, differentcolourpieces)
+            availablemoves = self.availablemovesQUEEN(SAMECOLOURPIECES, DIFFERENTCOLOURPIECES)
         elif self.figure == "KING":
-            availablemoves = self.availablemovesKING()
+            availablemoves = self.availablemovesKING(SAMECOLOURPIECES, DIFFERENTCOLOURPIECES)
         return availablemoves
 
-    def availablemovesKING(self):
+    def checkcorrectness(self,SAMECOLOURPIECES,DIFFERENTCOLOURPIECES,position,availablemoves):
+        if ord(position[0])<=72 and ord(position[0])>=65 and ord(position[1])>=49 and ord(position[1])<=56 and position not in SAMECOLOURPIECES and not self.check(SAMECOLOURPIECES,DIFFERENTCOLOURPIECES,position) and position not in availablemoves:
+            availablemoves.append(position)
+
+    def availablemovesKING(self,SAMECOLOURPIECES,DIFFERENTCOLOURPIECES):
         availablemoves = []
-        availablemoves.append(self.createpos(1, 1))
-        availablemoves.append(self.createpos(1, 0))
-        availablemoves.append(self.createpos(1, -1))
-        availablemoves.append(self.createpos(0, 1))
-        availablemoves.append(self.createpos(0, -1))
-        availablemoves.append(self.createpos(-1, 1))
-        availablemoves.append(self.createpos(-1, 0))
-        availablemoves.append(self.createpos(-1, -1))
+        self.checkcorrectness(SAMECOLOURPIECES, DIFFERENTCOLOURPIECES, self.createpos(1 ,1), availablemoves)
+        self.checkcorrectness(SAMECOLOURPIECES, DIFFERENTCOLOURPIECES, self.createpos(1, 0), availablemoves)
+        self.checkcorrectness(SAMECOLOURPIECES, DIFFERENTCOLOURPIECES, self.createpos(1, -1), availablemoves)
+        self.checkcorrectness(SAMECOLOURPIECES, DIFFERENTCOLOURPIECES, self.createpos(0, 1), availablemoves)
+        self.checkcorrectness(SAMECOLOURPIECES, DIFFERENTCOLOURPIECES, self.createpos(0, -1), availablemoves)
+        self.checkcorrectness(SAMECOLOURPIECES, DIFFERENTCOLOURPIECES, self.createpos(-1, 1), availablemoves)
+        self.checkcorrectness(SAMECOLOURPIECES, DIFFERENTCOLOURPIECES, self.createpos(-1, 0), availablemoves)
+        self.checkcorrectness(SAMECOLOURPIECES, DIFFERENTCOLOURPIECES, self.createpos(-1, -1), availablemoves)
         return availablemoves
 
     def availablemovesQUEEN(self, SAMECOLOURPIECES, DIFFERENTCOLOURPIECES):
@@ -90,13 +151,12 @@ class pion:
                 if position in SAMECOLOURPIECES and position != self.position:
                     break
                 elif position in DIFFERENTCOLOURPIECES:
-                    availablemoves.append(position)
+                    self.checkcorrectness(SAMECOLOURPIECES, DIFFERENTCOLOURPIECES, position, availablemoves)
                     break
                 else:
-                    availablemoves.append(position)
+                    self.checkcorrectness(SAMECOLOURPIECES, DIFFERENTCOLOURPIECES, position, availablemoves)
                 iteratorvariable = iteratorvariable + iterator
                 position = self.createpos(0, iteratorvariable)
-                print(position)
             position = self.position
         for iterator in iterators:
             iteratorvariable = 0
@@ -104,27 +164,26 @@ class pion:
                 if position in SAMECOLOURPIECES and position != self.position:
                     break
                 elif position in DIFFERENTCOLOURPIECES:
-                    availablemoves.append(position)
+                    self.checkcorrectness(SAMECOLOURPIECES, DIFFERENTCOLOURPIECES, position, availablemoves)
                     break
                 else:
-                    availablemoves.append(position)
+                    self.checkcorrectness(SAMECOLOURPIECES,DIFFERENTCOLOURPIECES, position, availablemoves)
                 iteratorvariable = iteratorvariable + iterator
                 position = self.createpos(iteratorvariable, 0)
             position = self.position
-        print(availablemoves)
         return availablemoves
 
-    def availablemovesKNIGTHT(self):
-        avalablepositions = []
-        avalablepositions.append(self.createpos(2, 1))
-        avalablepositions.append(self.createpos(2, -1))
-        avalablepositions.append(self.createpos(-2, 1))
-        avalablepositions.append(self.createpos(-2, -1))
-        avalablepositions.append(self.createpos(1, 2))
-        avalablepositions.append(self.createpos(1, -2))
-        avalablepositions.append(self.createpos(-1, 2))
-        avalablepositions.append(self.createpos(-1, -2))
-        return avalablepositions
+    def availablemovesKNIGTHT(self,SAMECOLOURPIECES,DIFFERENTCOLOURPIECES):
+        availablemoves = []
+        self.checkcorrectness(SAMECOLOURPIECES, DIFFERENTCOLOURPIECES, self.createpos(2, 1), availablemoves)
+        self.checkcorrectness(SAMECOLOURPIECES, DIFFERENTCOLOURPIECES, self.createpos(2, -1), availablemoves)
+        self.checkcorrectness(SAMECOLOURPIECES, DIFFERENTCOLOURPIECES, self.createpos(-2, 1), availablemoves)
+        self.checkcorrectness(SAMECOLOURPIECES, DIFFERENTCOLOURPIECES, self.createpos(-2, -1), availablemoves)
+        self.checkcorrectness(SAMECOLOURPIECES, DIFFERENTCOLOURPIECES, self.createpos(1, 2), availablemoves)
+        self.checkcorrectness(SAMECOLOURPIECES, DIFFERENTCOLOURPIECES, self.createpos(1, -2), availablemoves)
+        self.checkcorrectness(SAMECOLOURPIECES, DIFFERENTCOLOURPIECES, self.createpos(-1, 2), availablemoves)
+        self.checkcorrectness(SAMECOLOURPIECES, DIFFERENTCOLOURPIECES, self.createpos(-1, -2), availablemoves)
+        return availablemoves
 
     def availablemovesBISHOP(self, SAMECOLOURPIECES, DIFFERENTCOLOURPIECES):
         availablemoves = []
@@ -134,13 +193,12 @@ class pion:
             iteratorvariable = 0
             while ord(position[0]) >= 65 and ord(position[0]) <= 72 and int(position[1]) >= 1 and int(position[1]) <= 8:
                 if position in SAMECOLOURPIECES and position != self.position:
-                    print(position)
                     break
                 elif position in DIFFERENTCOLOURPIECES:
-                    availablemoves.append(position)
+                    self.checkcorrectness(SAMECOLOURPIECES, DIFFERENTCOLOURPIECES,  position, availablemoves)
                     break
                 else:
-                    availablemoves.append(position)
+                    self.checkcorrectness(SAMECOLOURPIECES, DIFFERENTCOLOURPIECES, position, availablemoves)
                 iteratorvariable += iterator
                 position = self.createpos(iteratorvariable, iteratorvariable)
             position = self.position
@@ -150,16 +208,14 @@ class pion:
                 if position in SAMECOLOURPIECES and position != self.position:
                     break
                 elif position in DIFFERENTCOLOURPIECES:
-                    availablemoves.append(position)
+                    self.checkcorrectness(SAMECOLOURPIECES, DIFFERENTCOLOURPIECES, position, availablemoves)
                     break
                 else:
-                    availablemoves.append(position)
+                    self.checkcorrectness(SAMECOLOURPIECES, DIFFERENTCOLOURPIECES, position, availablemoves)
                 iteratorvariable += iterator
                 position = self.createpos(iteratorvariable, -iteratorvariable)
             position = self.position
-        print(availablemoves)
         return availablemoves
-        print(avalablepositions)
 
     def availablemovesPAWN(self, SAMECOLOURPIECES, DIFFERENTCOLOURPIECES):
         availablemoves = []
@@ -167,15 +223,14 @@ class pion:
         if self.colour == "BLACK":
             i = -1
         if self.createpos(0, i * 1) not in DIFFERENTCOLOURPIECES:
-            availablemoves.append(self.createpos(0, i * 1))
+            self.checkcorrectness(SAMECOLOURPIECES, DIFFERENTCOLOURPIECES, self.createpos(0, i * 1), availablemoves)
             if self.createpos(0, i * 2) not in DIFFERENTCOLOURPIECES and self.createpos(0,
                                                                                         i * 1) not in SAMECOLOURPIECES and not self.moved:
-                availablemoves.append(self.createpos(0, i * 2))
+                self.checkcorrectness(SAMECOLOURPIECES, DIFFERENTCOLOURPIECES, self.createpos(0, i * 2), availablemoves)
         if self.createpos(1, i * 1) in DIFFERENTCOLOURPIECES:
-            availablemoves.append(self.createpos(1, i * 1))
+            self.checkcorrectness(SAMECOLOURPIECES, DIFFERENTCOLOURPIECES, self.createpos(1, i * 1), availablemoves)
         if self.createpos(-1, i * 1) in DIFFERENTCOLOURPIECES:
-            availablemoves.append(self.createpos(-1, i * 1))
-        print(availablemoves)
+            self.checkcorrectness(SAMECOLOURPIECES, DIFFERENTCOLOURPIECES, self.createpos(-1, i * 1), availablemoves)
         return availablemoves
 
     def createpos(self, howmanyletter, howmanynumbers):
