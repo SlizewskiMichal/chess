@@ -5,6 +5,7 @@ import sys
 import copy
 
 
+
 class pion:
     def __init__(self, pozycja, colour, figure):
         self.alive = True
@@ -49,6 +50,23 @@ class pion:
         print('N')
         return False
 
+    def returnavailablemoves(self,samecolourpieces, differentcolourpieces):
+        self.samecolorpiecesglobal = samecolourpieces
+        self.differentpiecesglobal = differentcolourpieces
+
+        samepiecespositions = []
+        differentpiecespositions = []
+
+        for piece in samecolourpieces:
+            samepiecespositions.append(piece.position)
+
+        for piece in differentcolourpieces:
+            differentpiecespositions.append(piece.position)
+
+        self.availablemoves = self.availablemovesfunc(samepiecespositions, differentpiecespositions)
+
+        return self.availablemoves
+
     def killpawn(self):
         self.position = None
         self.coordinates = None
@@ -89,6 +107,8 @@ class pion:
 
         for piece in differentpieceslocal:
             piece.checkmode = True
+            if piece.position in samecolourpiecespositions:
+                piece.killpawn()
             availablemoves = piece.availablemovesfunc(differentcolourpiecespositionslocal, samecolourpiecespositions)
             for move in availablemoves:
                 alldifferentpiecesavailablemoves.append(move)
@@ -117,8 +137,7 @@ class pion:
         return availablemoves
 
     def checkcorrectness(self, SAMECOLOURPIECES, DIFFERENTCOLOURPIECES, position, availablemoves):
-        if not (not (72 >= ord(position[0]) >= 65) or not (ord(position[1]) >= 49)) and ord(
-                position[1]) <= 56 and position not in SAMECOLOURPIECES and not self.check(SAMECOLOURPIECES,
+        if  len(position) == 2 and (72 >= ord(position[0]) >= 65) and (56 >= ord(position[1]) >= 49) and (position not in SAMECOLOURPIECES) and not self.check(SAMECOLOURPIECES,
                                                                                            DIFFERENTCOLOURPIECES,
                                                                                            position) and position not in availablemoves:
             availablemoves.append(position)
@@ -387,6 +406,8 @@ class board(QWidget):
             self.Players[playerindex].PieceChoosed = False
             self.availablemoves = []
             self.update()
+            return True
+        return False
 
     def shouldikill(self, playerindex, pieceindex):
         indexofpiece = 0
@@ -400,19 +421,19 @@ class board(QWidget):
     def changepiecepos(self, x, y):
         playerindex, pieceindex = self.findactivepiece()
 
-        self.releasefigure(playerindex, pieceindex, x, y)
+        changepiece = self.releasefigure(playerindex, pieceindex, x, y)
 
         availablepositions = []
         for piece in self.Players[playerindex].pieces:
             availablepositions.append(piece.coordinates)
 
-        if (x - (x % 100),y - (y % 100)) in availablepositions:
+        if (x - (x % 100),y - (y % 100)) in availablepositions and not changepiece:
             print("yolo")
             self.Players[playerindex].pieces[pieceindex].active = False
             self.Players[playerindex].PieceChoosed = False
             self.chosefigure(x,y)
 
-        if self.Players[playerindex].pieces[pieceindex].isinavailablemoves(x - (x % 100), y - (y % 100),
+        if not changepiece and self.Players[playerindex].pieces[pieceindex].isinavailablemoves(x - (x % 100), y - (y % 100),
                                                                            self.Players[playerindex].pieces,
                                                                            self.Players[abs(playerindex - 1)].pieces):
             self.Players[playerindex].pieces[pieceindex].changecoordinates(x - (x % 100), y - (y % 100))
@@ -472,13 +493,12 @@ class board(QWidget):
                     activePlayerpieces = []
                     secondPlayerpieces = []
                     for piece in self.Players[playerindex].pieces:
-                        activePlayerpieces.append(piece.position)
+                        activePlayerpieces.append(piece)
                         activePlayer.pieces[pieceindex].samecolorpiecesglobal.append(piece)
                     for piece in self.Players[abs(playerindex-1)].pieces:
-                        secondPlayerpieces.append(piece.position)
+                        secondPlayerpieces.append(piece)
                         activePlayer.pieces[pieceindex].differentpiecesglobal.append(piece)
-                    self.availablemoves = activePlayer.pieces[pieceindex].availablemovesfunc(activePlayerpieces,
-                                                                                             secondPlayerpieces)
+                    self.availablemoves = activePlayer.pieces[pieceindex].returnavailablemoves(activePlayerpieces,secondPlayerpieces)
                     print(self.availablemoves)
                     self.update()
                     break
