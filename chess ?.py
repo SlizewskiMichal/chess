@@ -1,5 +1,6 @@
 from PyQt5.QtWidgets import (QWidget, QToolTip, QApplication, QLabel)
-from PyQt5.QtGui import QPainter, QColor, QPixmap, QFont
+from PyQt5.QtGui import QPainter, QColor, QPixmap, QFont, QBrush, QPen
+from PyQt5.QtCore import Qt
 import sys
 import copy
 
@@ -54,12 +55,12 @@ class pion:
         self.active = False
         self.alive = False
 
-    def check(self,samecolourpiecespositions,differentcolourpiecespositions,position):
+    def check(self, samecolourpiecespositions, differentcolourpiecespositions, position):
         if self.checkmode:
             return False
         differentpieceslocal = copy.deepcopy(self.differentpiecesglobal)
         index = 0
-        for i in range (0,len(samecolourpiecespositions)):
+        for i in range(0, len(samecolourpiecespositions)):
             if samecolourpiecespositions[i] == self.position:
                 samecolourpiecespositions[i] = position
                 index = i
@@ -68,7 +69,7 @@ class pion:
         alldifferentpiecesavailablemoves = []
 
         if samecolourpiecespositions[15] in differentcolourpiecespositions:
-            for index2 in range(0,len(differentpieceslocal)):
+            for index2 in range(0, len(differentpieceslocal)):
                 if samecolourpiecespositions[15] == differentpieceslocal[index2].position:
                     print(differentpieceslocal[index2].position)
                     print(position)
@@ -86,10 +87,9 @@ class pion:
         for piece in differentpieceslocal:
             differentcolourpiecespositionslocal.append(piece.position)
 
-
         for piece in differentpieceslocal:
             piece.checkmode = True
-            availablemoves = piece.availablemovesfunc(differentcolourpiecespositionslocal,samecolourpiecespositions)
+            availablemoves = piece.availablemovesfunc(differentcolourpiecespositionslocal, samecolourpiecespositions)
             for move in availablemoves:
                 alldifferentpiecesavailablemoves.append(move)
             piece.checkmode = False
@@ -99,10 +99,9 @@ class pion:
         samecolourpiecespositions[index] = self.position
         return False
 
-
     def availablemovesfunc(self, SAMECOLOURPIECES, DIFFERENTCOLOURPIECES):
         if not self.alive:
-            return([])
+            return ([])
         if self.figure == "KNIGHT":
             availablemoves = self.availablemovesKNIGTHT(SAMECOLOURPIECES, DIFFERENTCOLOURPIECES)
         elif self.figure == "PAWN":
@@ -117,13 +116,16 @@ class pion:
             availablemoves = self.availablemovesKING(SAMECOLOURPIECES, DIFFERENTCOLOURPIECES)
         return availablemoves
 
-    def checkcorrectness(self,SAMECOLOURPIECES,DIFFERENTCOLOURPIECES,position,availablemoves):
-        if ord(position[0])<=72 and ord(position[0])>=65 and ord(position[1])>=49 and ord(position[1])<=56 and position not in SAMECOLOURPIECES and not self.check(SAMECOLOURPIECES,DIFFERENTCOLOURPIECES,position) and position not in availablemoves:
+    def checkcorrectness(self, SAMECOLOURPIECES, DIFFERENTCOLOURPIECES, position, availablemoves):
+        if not (not (72 >= ord(position[0]) >= 65) or not (ord(position[1]) >= 49)) and ord(
+                position[1]) <= 56 and position not in SAMECOLOURPIECES and not self.check(SAMECOLOURPIECES,
+                                                                                           DIFFERENTCOLOURPIECES,
+                                                                                           position) and position not in availablemoves:
             availablemoves.append(position)
 
-    def availablemovesKING(self,SAMECOLOURPIECES,DIFFERENTCOLOURPIECES):
+    def availablemovesKING(self, SAMECOLOURPIECES, DIFFERENTCOLOURPIECES):
         availablemoves = []
-        self.checkcorrectness(SAMECOLOURPIECES, DIFFERENTCOLOURPIECES, self.createpos(1 ,1), availablemoves)
+        self.checkcorrectness(SAMECOLOURPIECES, DIFFERENTCOLOURPIECES, self.createpos(1, 1), availablemoves)
         self.checkcorrectness(SAMECOLOURPIECES, DIFFERENTCOLOURPIECES, self.createpos(1, 0), availablemoves)
         self.checkcorrectness(SAMECOLOURPIECES, DIFFERENTCOLOURPIECES, self.createpos(1, -1), availablemoves)
         self.checkcorrectness(SAMECOLOURPIECES, DIFFERENTCOLOURPIECES, self.createpos(0, 1), availablemoves)
@@ -167,13 +169,13 @@ class pion:
                     self.checkcorrectness(SAMECOLOURPIECES, DIFFERENTCOLOURPIECES, position, availablemoves)
                     break
                 else:
-                    self.checkcorrectness(SAMECOLOURPIECES,DIFFERENTCOLOURPIECES, position, availablemoves)
+                    self.checkcorrectness(SAMECOLOURPIECES, DIFFERENTCOLOURPIECES, position, availablemoves)
                 iteratorvariable = iteratorvariable + iterator
                 position = self.createpos(iteratorvariable, 0)
             position = self.position
         return availablemoves
 
-    def availablemovesKNIGTHT(self,SAMECOLOURPIECES,DIFFERENTCOLOURPIECES):
+    def availablemovesKNIGTHT(self, SAMECOLOURPIECES, DIFFERENTCOLOURPIECES):
         availablemoves = []
         self.checkcorrectness(SAMECOLOURPIECES, DIFFERENTCOLOURPIECES, self.createpos(2, 1), availablemoves)
         self.checkcorrectness(SAMECOLOURPIECES, DIFFERENTCOLOURPIECES, self.createpos(2, -1), availablemoves)
@@ -195,7 +197,7 @@ class pion:
                 if position in SAMECOLOURPIECES and position != self.position:
                     break
                 elif position in DIFFERENTCOLOURPIECES:
-                    self.checkcorrectness(SAMECOLOURPIECES, DIFFERENTCOLOURPIECES,  position, availablemoves)
+                    self.checkcorrectness(SAMECOLOURPIECES, DIFFERENTCOLOURPIECES, position, availablemoves)
                     break
                 else:
                     self.checkcorrectness(SAMECOLOURPIECES, DIFFERENTCOLOURPIECES, position, availablemoves)
@@ -312,6 +314,8 @@ class board(QWidget):
 
         self.whoPlayNow = "W"
 
+        self.availablemoves = []
+
     def initUI(self):
 
         QToolTip.setFont(QFont('SansSerif', 10))
@@ -338,7 +342,7 @@ class board(QWidget):
     def changeplayer(self):
         if self.whoPlayNow == "W":
             self.whoPlayNow = "B"
-        else :
+        else:
             self.whoPlayNow = "W"
 
     def updatelabels(self):
@@ -381,6 +385,8 @@ class board(QWidget):
             print("CHANGE")
             self.Players[playerindex].pieces[pieceindex].active = False
             self.Players[playerindex].PieceChoosed = False
+            self.availablemoves = []
+            self.update()
 
     def shouldikill(self, playerindex, pieceindex):
         indexofpiece = 0
@@ -395,6 +401,16 @@ class board(QWidget):
         playerindex, pieceindex = self.findactivepiece()
 
         self.releasefigure(playerindex, pieceindex, x, y)
+
+        availablepositions = []
+        for piece in self.Players[playerindex].pieces:
+            availablepositions.append(piece.coordinates)
+
+        if (x - (x % 100),y - (y % 100)) in availablepositions:
+            print("yolo")
+            self.Players[playerindex].pieces[pieceindex].active = False
+            self.Players[playerindex].PieceChoosed = False
+            self.chosefigure(x,y)
 
         if self.Players[playerindex].pieces[pieceindex].isinavailablemoves(x - (x % 100), y - (y % 100),
                                                                            self.Players[playerindex].pieces,
@@ -413,7 +429,11 @@ class board(QWidget):
 
     def mouseReleaseEvent(self, QmouseEvent):
         x, y = QmouseEvent.x(), QmouseEvent.y()
+        self.availablemoves = []
+        self.update()
         if self.Players[0].PieceChoosed or self.Players[1].PieceChoosed:
+            self.availablemoves = []
+            self.update()
             self.changepiecepos(x, y)
         else:
             self.chosefigure(x, y)
@@ -422,14 +442,45 @@ class board(QWidget):
         qp.setBrush(QColor(r, g, b))
         qp.drawRect(x, y, width, height)
 
+    def drawavailablemoves(self, qp):
+        for move in self.availablemoves:
+
+            qp.setPen(QPen(Qt.green, 8, Qt.SolidLine))
+
+            qp.setBrush(QBrush(Qt.red, Qt.SolidPattern))
+
+            x = (ord(move[0]) - 65) * 100 + 45
+
+            y = (ord(move[1]) - 49) * 100 + 45
+
+            print(x)
+            print(y)
+
+            qp.drawEllipse(x, 800-y, 10, 10)
+
+
     def chosefigure(self, x, y):
         for playerindex in range(0, len(self.Players)):
             for pieceindex in range(0, len(self.Players[playerindex].pieces)):
                 if not (not self.Players[playerindex].pieces[pieceindex].alive or not self.mouse_in(x, y, self.Players[
-                    playerindex].pieces[pieceindex].coordinates)) and not self.Players[playerindex].PieceChoosed and self.Players[playerindex].ktory[0] == self.whoPlayNow:
+                    playerindex].pieces[pieceindex].coordinates)) and not self.Players[playerindex].PieceChoosed and \
+                        self.Players[playerindex].ktory[0] == self.whoPlayNow:
                     print(self.Players[playerindex].ktory + self.Players[playerindex].pieces[pieceindex].figure)
                     self.Players[playerindex].pieces[pieceindex].active = True
                     self.Players[playerindex].PieceChoosed = True
+                    activePlayer = copy.deepcopy(self.Players[playerindex])
+                    activePlayerpieces = []
+                    secondPlayerpieces = []
+                    for piece in self.Players[playerindex].pieces:
+                        activePlayerpieces.append(piece.position)
+                        activePlayer.pieces[pieceindex].samecolorpiecesglobal.append(piece)
+                    for piece in self.Players[abs(playerindex-1)].pieces:
+                        secondPlayerpieces.append(piece.position)
+                        activePlayer.pieces[pieceindex].differentpiecesglobal.append(piece)
+                    self.availablemoves = activePlayer.pieces[pieceindex].availablemovesfunc(activePlayerpieces,
+                                                                                             secondPlayerpieces)
+                    print(self.availablemoves)
+                    self.update()
                     break
 
     def calculate_x_y(self, position):
@@ -453,6 +504,7 @@ class board(QWidget):
                     self.drawRect(qp, 232, 235, 239, j * 100, i * 100, 100, 100)
                 else:
                     self.drawRect(qp, 125, 135, 150, j * 100, i * 100, 100, 100)
+        self.drawavailablemoves(qp)
         qp.end()
 
     def closeEvent(self, event):
