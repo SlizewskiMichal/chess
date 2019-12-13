@@ -85,6 +85,16 @@ class Board(QWidget):
             player_index = player_index + 1
         return -100, -100
 
+
+    def if_player_cant_move(self,playerindex):
+        for piece in self.Players[playerindex].pieces:
+            same_colour_pieces = self.Players[playerindex].pieces
+            different_colour_pieces = self.Players[abs(playerindex-1)].pieces
+            available_moves_and_check = piece.return_available_moves(same_colour_pieces , different_colour_pieces)
+            if available_moves_and_check[0] != []:
+                return (False,available_moves_and_check[1])
+        return (True,available_moves_and_check[1])
+
     def release_figure(self, player_index, piece_index, x, y):
         if self.Players[player_index].pieces[piece_index].coordinates == (x - x % 100, y - y % 100):
             print("CHANGE")
@@ -134,6 +144,15 @@ class Board(QWidget):
             self.Players[player_index].piece_chosen = False
 
             self.updatelabels()
+
+            availablemoves,check = self.if_player_cant_move(abs(player_index-1))
+
+            if availablemoves:
+                if check:
+                    print("Check Mate!! player " + self.Players[player_index].which + " won !")
+                else:
+                    print("PAT!")
+                exit()
 
             self.change_player()
 
@@ -189,7 +208,7 @@ class Board(QWidget):
                         secondPlayerpieces.append(piece)
                         activePlayer.pieces[piece_index].different_pieces_global.append(piece)
                     self.available_moves = activePlayer.pieces[piece_index].return_available_moves(activePlayerpieces,
-                                                                                                 secondPlayerpieces)
+                                                                                                 secondPlayerpieces)[0]
                     print(self.available_moves)
                     self.update()
                     break

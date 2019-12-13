@@ -60,7 +60,9 @@ class Piece:
 
         self.available_moves = self.available_moves_func(same_pieces_positions, different_pieces_positions)
 
-        return self.available_moves
+        check = self.check(same_pieces_positions,different_pieces_positions,self.position)
+
+        return (self.available_moves,check)
 
     def kill_pawn(self):
         self.position = None
