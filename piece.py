@@ -13,6 +13,7 @@ class Piece:
         self.same_color_pieces_global = []
         self.different_pieces_global = []
         self.check_mode = False
+        self.capturing_in_passing = False
 
     def change_coordinates(self, x, y):
         self.coordinates = (x, y)
@@ -244,6 +245,37 @@ class Piece:
         i = 1
         if self.colour == "BLACK":
             i = -1
+
+        if self.position != None and int(self.position[1]) == int(4.5 + 0.5*i):
+            print('0')
+            for index in range(0,8):
+                print(index+10000)
+                if self.different_pieces_global[index].position != None and int(self.different_pieces_global[index].position[1]) == int(4.5 + 0.5*i):
+                    print('1')
+                    if self.different_pieces_global[index].capturing_in_passing:
+                        print('2')
+                        letter = different_color_pieces[index][0]
+
+                        buffor = [self.different_pieces_global[index].position , self.different_pieces_global[index].coordinates,self.different_pieces_global[index].active,self.different_pieces_global[index].alive]
+
+                        different_color_pieces[index] = None
+
+                        self.different_pieces_global[index].kill_pawn
+
+                        self.check_correctness(same_color_pieces, different_color_pieces,letter + self.create_pos(0, i)[1] ,
+                                               available_moves)
+
+                        different_color_pieces[index] = buffor[0]
+
+                        self.different_pieces_global[index].position = buffor[0]
+
+                        self.different_pieces_global[index].coordinates = buffor[1]
+
+                        self.different_pieces_global[index].active = buffor[2]
+
+                        self.different_pieces_global[index].alive = buffor[3]
+
+
         if self.create_pos(0, i * 1) not in different_color_pieces:
             self.check_correctness(same_color_pieces, different_color_pieces, self.create_pos(0, i * 1),
                                    available_moves)

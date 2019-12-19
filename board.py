@@ -122,6 +122,7 @@ class Board(QWidget):
         available_positions = []
         for piece in self.Players[player_index].pieces:
             available_positions.append(piece.coordinates)
+            piece.capturing_in_passing = False
 
         if (x - (x % 100), y - (y % 100)) in available_positions and not change_piece:
             print("yolo")
@@ -135,7 +136,33 @@ class Board(QWidget):
                                                                                                       player_index].pieces,
                                                                                                      self.Players[abs(
                                                                                                       player_index - 1)].pieces):
+
+            position_before_move = self.Players[player_index].pieces[piece_index].position
+            position_after_move = chr((x - (x % 100)) // 100 + 65) + str(8 - (y - (y % 100)) // 100)
+
+
+            if piece_index < 8 and  int(self.Players[player_index].pieces[piece_index].position[1]) == 2 + 5*player_index:
+                self.Players[player_index].pieces[piece_index].capturing_in_passing = True
+                print("tak0")
+
             self.Players[player_index].pieces[piece_index].change_coordinates(x - (x % 100), y - (y % 100))
+
+            if int(self.Players[player_index].pieces[piece_index].position[1]) != 4 + player_index:
+                self.Players[player_index].pieces[piece_index].capturing_in_passing = False
+                print("nie0")
+
+
+            if piece_index < 8 and position_after_move[0] != position_before_move[0]:
+                capturing_in_passing = True
+                for index in range(0,8):
+                    if self.Players[abs(player_index-1)].pieces[index].position == position_after_move :
+                        capturing_in_passing = False
+                if capturing_in_passing:
+                    for index in range(0,8):
+                        if self.Players[abs(player_index-1)].pieces[index].position!= None and self.Players[abs(player_index-1)].pieces[index].position[0] == position_after_move[0] and int(self.Players[abs(player_index-1)].pieces[index].position[1]) == int(position_after_move[1]) - 1 + player_index*2:
+                            self.erase_pawn_image(abs(player_index - 1), index)
+                            self.Players[abs(player_index-1)].pieces[index].kill_pawn()
+                            print("yoolo kill")
 
             self.should_i_kill(player_index, piece_index)
 
@@ -152,9 +179,9 @@ class Board(QWidget):
                     print("Check Mate!! player " + self.Players[player_index].which + " won !")
                 else:
                     print("PAT!")
-                exit()
 
             self.change_player()
+
 
     def mouseReleaseEvent(self, QmouseEvent):
         x, y = QmouseEvent.x(), QmouseEvent.y()
