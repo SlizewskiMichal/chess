@@ -1,3 +1,3 @@
 # chess
 
-app for game chess
+app for playing chess
