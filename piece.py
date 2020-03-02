@@ -49,6 +49,7 @@ class Piece:
     def return_available_moves(self, same_color_pieces, different_color_pieces):
         self.same_color_pieces_global = same_color_pieces
         self.different_pieces_global = different_color_pieces
+        print(self.same_color_pieces_global)
 
         same_pieces_positions = []
         different_pieces_positions = []
@@ -144,6 +145,26 @@ class Piece:
                                                                       position) and position not in available_moves:
             available_moves.append(position)
 
+    def short_castling(self,same_color_pieces,different_color_pieces,all_pieces_position):
+        if self.same_color_pieces_global[9].alive and not self.same_color_pieces_global[9].moved:
+            if  ('F' + self.same_color_pieces_global[15].position[1] in all_pieces_position or
+                'G' + self.same_color_pieces_global[15].position[1] in all_pieces_position):
+                return False
+            if not (self.check(same_color_pieces,different_color_pieces,'F' + self.same_color_pieces_global[15].position[1]) or
+                self.check(same_color_pieces,different_color_pieces,'G' + self.same_color_pieces_global[15].position[1])):
+                return True
+
+    def long_castling(self,same_color_pieces,different_color_pieces,all_pieces_position):
+        if self.same_color_pieces_global[8].alive and not self.same_color_pieces_global[8].moved:
+            if  ('C' + self.same_color_pieces_global[15].position[1] in all_pieces_position or
+                'D' + self.same_color_pieces_global[15].position[1] in all_pieces_position):
+                return False
+            if not (self.check(same_color_pieces,different_color_pieces,'C' + self.same_color_pieces_global[15].position[1]) or
+                self.check(same_color_pieces,different_color_pieces,'D' + self.same_color_pieces_global[15].position[1])):
+                return True
+
+
+
     def available_moves_KING(self, same_color_pieces, different_color_pieces):
         available_moves = []
         self.check_correctness(same_color_pieces, different_color_pieces, self.create_pos(1, 1), available_moves)
@@ -154,6 +175,16 @@ class Piece:
         self.check_correctness(same_color_pieces, different_color_pieces, self.create_pos(-1, 1), available_moves)
         self.check_correctness(same_color_pieces, different_color_pieces, self.create_pos(-1, 0), available_moves)
         self.check_correctness(same_color_pieces, different_color_pieces, self.create_pos(-1, -1), available_moves)
+        if not self.check_mode and not self.same_color_pieces_global[15].moved and not self.check(same_color_pieces,different_color_pieces,self.position):
+            all_pieces_position = []
+            for x in same_color_pieces:
+                all_pieces_position.append(x)
+            for y in different_color_pieces:
+                all_pieces_position.append((y))
+            if self.short_castling(same_color_pieces,different_color_pieces,all_pieces_position):
+                available_moves.append('G'+self.same_color_pieces_global[15].position[1])
+            if self.long_castling(same_color_pieces, different_color_pieces, all_pieces_position):
+                available_moves.append('C' + self.same_color_pieces_global[15].position[1])
         return available_moves
 
     def available_moves_QUEEN(self, same_color_pieces, different_color_pieces):
@@ -247,13 +278,9 @@ class Piece:
             i = -1
 
         if self.position != None and int(self.position[1]) == int(4.5 + 0.5*i):
-            print('0')
             for index in range(0,8):
-                print(index+10000)
                 if self.different_pieces_global[index].position != None and int(self.different_pieces_global[index].position[1]) == int(4.5 + 0.5*i):
-                    print('1')
                     if self.different_pieces_global[index].capturing_in_passing:
-                        print('2')
                         letter = different_color_pieces[index][0]
 
                         buffor = [self.different_pieces_global[index].position , self.different_pieces_global[index].coordinates,self.different_pieces_global[index].active,self.different_pieces_global[index].alive]

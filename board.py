@@ -162,7 +162,20 @@ class Board(QWidget):
                         if self.Players[abs(player_index-1)].pieces[index].position!= None and self.Players[abs(player_index-1)].pieces[index].position[0] == position_after_move[0] and int(self.Players[abs(player_index-1)].pieces[index].position[1]) == int(position_after_move[1]) - 1 + player_index*2:
                             self.erase_pawn_image(abs(player_index - 1), index)
                             self.Players[abs(player_index-1)].pieces[index].kill_pawn()
-                            print("yoolo kill")
+
+            if piece_index == 15 and position_before_move == 'E' + str(player_index*7+1) and position_after_move == 'G' + str(player_index*7+1):
+                self.Players[player_index].pieces[9].change_coordinates(500, 700*abs(player_index-1))
+                self.piece_labels[player_index * 16 + 9].move(
+                    self.Players[player_index].pieces[9].coordinates[0],
+                    self.Players[player_index].pieces[9].coordinates[1])
+
+            if piece_index == 15 and position_before_move == 'E' + str(
+                    player_index * 7 + 1) and position_after_move == 'C' + str(player_index * 7 + 1):
+                self.Players[player_index].pieces[8].change_coordinates(300, 700 * abs(player_index - 1))
+                self.piece_labels[player_index * 16 + 8].move(
+                    self.Players[player_index].pieces[8].coordinates[0],
+                    self.Players[player_index].pieces[8].coordinates[1])
+
 
             self.should_i_kill(player_index, piece_index)
 
@@ -185,6 +198,7 @@ class Board(QWidget):
 
     def mouseReleaseEvent(self, QmouseEvent):
         x, y = QmouseEvent.x(), QmouseEvent.y()
+        print(x,y)
         self.available_moves = []
         self.update()
         if self.Players[0].piece_chosen or self.Players[1].piece_chosen:
