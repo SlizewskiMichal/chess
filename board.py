@@ -6,6 +6,10 @@ from PyQt5.QtWidgets import (QWidget, QToolTip, QLabel)
 
 from player import Player
 
+choosen_figure = ''
+
+pawn_promotion = False
+
 
 class Board(QWidget):
 
@@ -85,15 +89,14 @@ class Board(QWidget):
             player_index = player_index + 1
         return -100, -100
 
-
-    def if_player_cant_move(self,playerindex):
+    def if_player_cant_move(self, playerindex):
         for piece in self.Players[playerindex].pieces:
             same_colour_pieces = self.Players[playerindex].pieces
-            different_colour_pieces = self.Players[abs(playerindex-1)].pieces
-            available_moves_and_check = piece.return_available_moves(same_colour_pieces , different_colour_pieces)
+            different_colour_pieces = self.Players[abs(playerindex - 1)].pieces
+            available_moves_and_check = piece.return_available_moves(same_colour_pieces, different_colour_pieces)
             if available_moves_and_check[0] != []:
-                return (False,available_moves_and_check[1])
-        return (True,available_moves_and_check[1])
+                return False, available_moves_and_check[1]
+        return True, available_moves_and_check[1]
 
     def release_figure(self, player_index, piece_index, x, y):
         if self.Players[player_index].pieces[piece_index].coordinates == (x - x % 100, y - y % 100):
@@ -131,17 +134,17 @@ class Board(QWidget):
             self.chosefigure(x, y)
 
         if not change_piece and self.Players[player_index].pieces[piece_index].is_in_available_moves(x - (x % 100),
-                                                                                                  y - (y % 100),
+                                                                                                     y - (y % 100),
                                                                                                      self.Players[
-                                                                                                      player_index].pieces,
+                                                                                                         player_index].pieces,
                                                                                                      self.Players[abs(
-                                                                                                      player_index - 1)].pieces):
+                                                                                                         player_index - 1)].pieces):
 
             position_before_move = self.Players[player_index].pieces[piece_index].position
             position_after_move = chr((x - (x % 100)) // 100 + 65) + str(8 - (y - (y % 100)) // 100)
 
-
-            if piece_index < 8 and  int(self.Players[player_index].pieces[piece_index].position[1]) == 2 + 5*player_index:
+            if piece_index < 8 and int(
+                    self.Players[player_index].pieces[piece_index].position[1]) == 2 + 5 * player_index:
                 self.Players[player_index].pieces[piece_index].capturing_in_passing = True
                 print("tak0")
 
@@ -151,20 +154,23 @@ class Board(QWidget):
                 self.Players[player_index].pieces[piece_index].capturing_in_passing = False
                 print("nie0")
 
-
             if piece_index < 8 and position_after_move[0] != position_before_move[0]:
                 capturing_in_passing = True
-                for index in range(0,8):
-                    if self.Players[abs(player_index-1)].pieces[index].position == position_after_move :
+                for index in range(0, 8):
+                    if self.Players[abs(player_index - 1)].pieces[index].position == position_after_move:
                         capturing_in_passing = False
                 if capturing_in_passing:
-                    for index in range(0,8):
-                        if self.Players[abs(player_index-1)].pieces[index].position!= None and self.Players[abs(player_index-1)].pieces[index].position[0] == position_after_move[0] and int(self.Players[abs(player_index-1)].pieces[index].position[1]) == int(position_after_move[1]) - 1 + player_index*2:
+                    for index in range(0, 8):
+                        if self.Players[abs(player_index - 1)].pieces[index].position is not None and \
+                                self.Players[abs(player_index - 1)].pieces[index].position[0] == position_after_move[
+                            0] and int(self.Players[abs(player_index - 1)].pieces[index].position[1]) == int(
+                            position_after_move[1]) - 1 + player_index * 2:
                             self.erase_pawn_image(abs(player_index - 1), index)
-                            self.Players[abs(player_index-1)].pieces[index].kill_pawn()
+                            self.Players[abs(player_index - 1)].pieces[index].kill_pawn()
 
-            if piece_index == 15 and position_before_move == 'E' + str(player_index*7+1) and position_after_move == 'G' + str(player_index*7+1):
-                self.Players[player_index].pieces[9].change_coordinates(500, 700*abs(player_index-1))
+            if piece_index == 15 and position_before_move == 'E' + str(
+                    player_index * 7 + 1) and position_after_move == 'G' + str(player_index * 7 + 1):
+                self.Players[player_index].pieces[9].change_coordinates(500, 700 * abs(player_index - 1))
                 self.piece_labels[player_index * 16 + 9].move(
                     self.Players[player_index].pieces[9].coordinates[0],
                     self.Players[player_index].pieces[9].coordinates[1])
@@ -176,6 +182,12 @@ class Board(QWidget):
                     self.Players[player_index].pieces[8].coordinates[0],
                     self.Players[player_index].pieces[8].coordinates[1])
 
+            if piece_index < 8 and position_after_move[1] == str(abs(player_index-1)*7+1) and self.Players[player_index].pieces[piece_index].figure == "PAWN":
+                global pawn_promotion
+                pawn_promotion = True
+                self.x = pawn_promotion_class(self.Players[player_index].which, player_index, piece_index, parent=self)
+                self.x.show()
+                print('halohalohlao')
 
             self.should_i_kill(player_index, piece_index)
 
@@ -185,7 +197,7 @@ class Board(QWidget):
 
             self.updatelabels()
 
-            availablemoves,check = self.if_player_cant_move(abs(player_index-1))
+            availablemoves, check = self.if_player_cant_move(abs(player_index - 1))
 
             if availablemoves:
                 if check:
@@ -195,18 +207,36 @@ class Board(QWidget):
 
             self.change_player()
 
+    def pawn_promotion_func(self, playerindex, pieceindex):
+        print("HI")
+        global choosen_figure
+        self.Players[playerindex].pieces[pieceindex].figure = choosen_figure
+        filepath = "./models/" + self.Players[playerindex].which[0] + choosen_figure + ".png"
+        self.piece_labels[playerindex * 16 + pieceindex].setPixmap(QPixmap(filepath))
+        availablemoves, check = self.if_player_cant_move(abs(playerindex - 1))
+
+        if availablemoves:
+            if check:
+                print("Check Mate!! player " + self.Players[playerindex].which + " won !")
+            else:
+                print("PAT!")
+
+        choosen_figure = ''
 
     def mouseReleaseEvent(self, QmouseEvent):
-        x, y = QmouseEvent.x(), QmouseEvent.y()
-        print(x,y)
-        self.available_moves = []
-        self.update()
-        if self.Players[0].piece_chosen or self.Players[1].piece_chosen:
+        global pawn_promotion
+        print(pawn_promotion)
+        if not pawn_promotion:
+            x, y = QmouseEvent.x(), QmouseEvent.y()
+            print(x, y)
             self.available_moves = []
             self.update()
-            self.change_piece_pos(x, y)
-        else:
-            self.chosefigure(x, y)
+            if self.Players[0].piece_chosen or self.Players[1].piece_chosen:
+                self.available_moves = []
+                self.update()
+                self.change_piece_pos(x, y)
+            else:
+                self.chosefigure(x, y)
 
     def drawRect(self, qp, r, g, b, x, y, width, height):
         qp.setBrush(QColor(r, g, b))
@@ -249,7 +279,8 @@ class Board(QWidget):
                         secondPlayerpieces.append(piece)
                         activePlayer.pieces[piece_index].different_pieces_global.append(piece)
                     self.available_moves = activePlayer.pieces[piece_index].return_available_moves(activePlayerpieces,
-                                                                                                 secondPlayerpieces)[0]
+                                                                                                   secondPlayerpieces)[
+                        0]
                     print(self.available_moves)
                     self.update()
                     break
@@ -280,3 +311,62 @@ class Board(QWidget):
 
     def closeEvent(self, event):
         exit()
+
+
+class pawn_promotion_class(QWidget):
+    def __init__(self, color, player_index, piece_index, parent):
+        super().__init__()
+        self.parent = parent
+        self.color = color
+        self.player_index = player_index
+        self.piece_index = piece_index
+        self.piece_labels = []
+        self.initUI()
+
+    def initUI(self):
+
+        QToolTip.setFont(QFont('SansSerif', 10))
+
+        self.setGeometry(3000, 400, 400, 100)
+
+        self.setWindowTitle('chose figure')
+
+        self.load_images()
+
+    def load_images(self):
+        self.piece_labels.append(QLabel(self.color[0] + 'QUEEN', self))
+        self.piece_labels[0].setPixmap(QPixmap("./models/" + self.color[0] + 'QUEEN.png'))
+
+        self.piece_labels.append(QLabel(self.color[0] + 'ROOK', self))
+        self.piece_labels[1].setPixmap(QPixmap("./models/" + self.color[0] + 'ROOK.png'))
+
+        self.piece_labels.append(QLabel(self.color[0] + 'BISHOP', self))
+        self.piece_labels[2].setPixmap(QPixmap("./models/" + self.color[0] + 'BISHOP.png'))
+
+        self.piece_labels.append(QLabel(self.color[0] + 'KNIGHT', self))
+        self.piece_labels[3].setPixmap(QPixmap("./models/" + self.color[0] + 'KNIGHT.png'))
+
+        self.piece_labels[0].move(0, 0)
+        self.piece_labels[1].move(100, 0)
+        self.piece_labels[2].move(200, 0)
+        self.piece_labels[3].move(300, 0)
+
+    def mouseReleaseEvent(self, QmouseEvent):
+        x, y = QmouseEvent.x(), QmouseEvent.y()
+        print(x, y)
+        x = x - x % 100
+        y = y - y % 100
+        global choosen_figure
+        if x == 0 and y == 0:
+            choosen_figure = 'QUEEN'
+        elif x == 100 and y == 0:
+            choosen_figure = 'ROOK'
+        elif x == 200 and y == 0:
+            choosen_figure = 'BISHOP'
+        elif x == 300 and y == 0:
+            choosen_figure = 'KNIGHT'
+        print(choosen_figure)
+        global pawn_promotion
+        pawn_promotion = False
+        self.parent.pawn_promotion_func(self.player_index, self.piece_index)
+        self.hide()
